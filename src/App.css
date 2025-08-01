@@ -1,0 +1,22 @@
+/* #root {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+} */
+
+.activity::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+
+/* Track */
+.activity::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+
+/* Handle */
+.activity::-webkit-scrollbar-thumb {
+  background: #bdbbbb;
+  border-radius: 10px;
+}
