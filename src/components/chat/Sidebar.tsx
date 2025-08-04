@@ -37,7 +37,7 @@ export default function Sidebar({
 }: SidebarProps) {
   return (
     <aside
-      className={`fixed h-full top-0 w-[60%] md:static md:w-[330px] md:top-auto md:left-auto px-5 py-10 transition-all ease-in-out delay-100 z-20 ${
+      className={`fixed h-full top-0 w-[60%] sm:w-[40%] md:static md:w-[330px] md:top-auto md:left-auto px-5 py-10 transition-all ease-in-out delay-100 z-20 ${
         history.length > 5
           ? "overflow-y-scroll activity mb-10"
           : "overflow-auto"

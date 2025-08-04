@@ -40,6 +40,8 @@ export default function Home() {
               alt="logo"
               className="w-auto h-[47px] lg:h-[70px]"
               draggable={false}
+              loading="lazy"
+              decoding="async"
             />
             <p
               className={`uppercase transition ease-in-out delay-100 ${
@@ -168,6 +170,8 @@ export default function Home() {
           draggable={false}
           alt="icon"
           className="absolute right-0 top-24 w-[150px] sm:top-10 sm:w-[250px] lg:w-[380px] lg:-top-10 xl:w-[400px]"
+          loading="lazy"
+          decoding="async"
         />
         {/* hero image */}
         <img
@@ -175,6 +179,8 @@ export default function Home() {
           draggable={false}
           alt="image"
           className="w-[1000px] h-auto mt-10 hidden lg:block"
+          loading="lazy"
+          decoding="async"
         />
       </section>
       {/* what we do */}
@@ -266,6 +272,8 @@ export default function Home() {
                 alt="image"
                 draggable={false}
                 className="absolute -right-2 -bottom-7 md:w-[400px] lg:w-[500px]"
+                loading="lazy"
+                decoding="async"
               />
             </div>
           </div>
@@ -294,6 +302,8 @@ export default function Home() {
                 alt="image"
                 draggable={false}
                 className="absolute -right-2 -bottom-7"
+                loading="lazy"
+                decoding="async"
               />
             </div>
             <div
@@ -340,6 +350,8 @@ export default function Home() {
           draggable={false}
           alt="img"
           className="w-[450px] h-fit hidden lg:block"
+          loading="lazy"
+          decoding="async"
         />
         <div className="flex flex-col gap-y-5 p-10 lg:max-w-[700px] xl:ml-24">
           <div
@@ -416,6 +428,8 @@ export default function Home() {
             draggable={false}
             alt="logo"
             className="w-[49px] h-[49px] absolute left-[40%] -top-10 md:w-[80px] md:h-[80px] md:left-[30%] lg:w-[108px] lg:h-[108px] lg:-top-24 lg:left-auto lg:right-10 xl:right-32"
+            loading="lazy"
+            decoding="async"
           />
         </div>
       </footer>

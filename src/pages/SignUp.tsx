@@ -78,7 +78,7 @@ export default function SignUp() {
 
     const checkPassword = validatePassword(signUpForm.password);
     if (checkPassword !== true) return toast.error(checkPassword);
-    
+
     signUpUser();
   };
 
@@ -106,6 +106,8 @@ export default function SignUp() {
               draggable={false}
               alt="logo"
               className="w-[80px] h-auto lg:w-[130px]"
+              loading="lazy"
+              decoding="async"
             />
             <p
               className={`uppercase text-lg transition ease-in-out delay-100 lg:text-xl ${

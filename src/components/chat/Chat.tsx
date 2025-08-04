@@ -1,6 +1,7 @@
 import { BsStars } from "react-icons/bs";
 import type { Messages } from "../../entities";
-import ReactMarkdown from "react-markdown";
+// import ReactMarkdown from "react-markdown";
+import MarkdownPreview from "@uiw/react-markdown-preview";
 import Loader from "../loader";
 
 interface ChatBoxProps {
@@ -17,7 +18,7 @@ export default function ChatBox({
   isTyping,
 }: ChatBoxProps) {
   return (
-    <div className="flex-1 w-full space-y-2 overflow-y-auto max-h-[74vh] activity px-5 lg:px-6 lg:py-5 lg:max-h-[72vh] lg:space-y-5">
+    <div className="flex-1 w-full space-y-2 overflow-y-auto max-h-[79vh] activity px-5 sm:max-h-[74vh] lg:px-6 lg:py-5 lg:max-h-[72vh] lg:space-y-5">
       {messages.map((msg, idx) => (
         <div
           key={idx}
@@ -52,8 +53,20 @@ export default function ChatBox({
               </div>
               <hr className="border-none h-[0.2px] bg-[#b9b9b957]" />
             </div>
-            {/* <p>{msg.content}</p> */}
-            <ReactMarkdown>{msg.content}</ReactMarkdown>
+            {msg.media_url && (
+              <img
+                src={msg.media_url}
+                alt="img"
+                draggable={false}
+                className="w-[200px] mb-2 md:w-[250px] lg:w-[300px]"
+                loading="lazy"
+                decoding="async"
+              />
+            )}
+            <MarkdownPreview
+              style={{ backgroundColor: "transparent", color: "inherit" }}
+              source={msg.content}
+            />
           </div>
         </div>
       ))}

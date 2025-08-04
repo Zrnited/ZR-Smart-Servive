@@ -1,6 +1,7 @@
 import { GiHamburgerMenu } from "react-icons/gi";
 import { useAppContext } from "../context";
 import { IoMdAttach } from "react-icons/io";
+import { AiOutlineClose } from "react-icons/ai";
 import { validateInput } from "../validation";
 import { useNavigate } from "react-router-dom";
 import { FaUserLarge } from "react-icons/fa6";
@@ -26,10 +27,10 @@ export interface UserConversation {
   msgs: Messages[] | undefined;
 }
 
-// type SelectedConversation = {
-//   e: string;
-//   title: string;
-// };
+interface ImageHandler {
+  url: string;
+  file: File;
+}
 
 export default function Chat() {
   const navigate = useNavigate();
@@ -62,6 +63,7 @@ export default function Chat() {
   const [error, setError] = useState<boolean>(false);
   const [isTyping, setIsTyping] = useState<boolean>(false);
   const [chatTitle, setChatTitle] = useState<string>("New Query");
+  const [image, setImage] = useState<ImageHandler>();
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   const sendMessage = async () => {
@@ -73,7 +75,7 @@ export default function Chat() {
       const data = {
         id: currConvId ? currConvId : null,
         message: userMsg ? userMsg : "",
-        file: null,
+        file: image?.file ? image.file : null,
         voice_note: null,
       };
 
@@ -82,7 +84,7 @@ export default function Chat() {
         sender: "user",
         content: userMsg,
         type: null,
-        media_url: null,
+        media_url: image?.url ? image.url : null,
         created_at: null,
       };
 
@@ -117,8 +119,11 @@ export default function Chat() {
         .catch((error) => {
           setIsTyping(false);
           console.log(error);
+          setUserMsg("");
           toast.error(error.message ? error.message : "Failed to send message");
         });
+
+      if (image?.url || image?.file) setImage(undefined);
     }
   };
 
@@ -176,7 +181,6 @@ export default function Chat() {
 
     await getConversation(e, accessToken)
       .then((resp) => {
-        // console.log(resp);
         if (resp.data) {
           setMessages({
             loader: false,
@@ -216,6 +220,18 @@ export default function Chat() {
     //reset thread
     if (thread.length > 1) setThread([]);
     setChatTitle("New Query");
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const systemfile = e.target.files?.[0];
+    if (systemfile) {
+      const localURL = URL.createObjectURL(systemfile);
+      // setImageURL(localURL);
+      setImage({
+        url: localURL,
+        file: systemfile,
+      });
+    }
   };
 
   useEffect(() => {
@@ -316,14 +332,14 @@ export default function Chat() {
           )}
           {/* error in network */}
           {error && (
-            <p className="text-red-700 text-xs text-center lg:text-sm">
+            <p className="text-red-700 text-xs text-center lg:text-sm px-5">
               Error in getting messages. <br /> Please click on selected chat to
-              reload.
+              reload or check your network connection.
             </p>
           )}
           <form
             onSubmit={handleSubmit}
-            className={`rounded-xl py-2 px-5 h-[67px] flex items-center justify-center transition ease-in-out delay-100 ${
+            className={`rounded-xl h-fit flex flex-col gap-y-1 transition ease-in-out delay-100 ${
               isNewChat
                 ? "max-w-[382px] mt-10 w-full"
                 : "absolute bottom-3 w-[90%] lg:bottom-5"
@@ -333,22 +349,50 @@ export default function Chat() {
                 : "bg-[#EBEBEB] text-[#333333]"
             } ${messages.loader || error ? "hidden" : "flex"}`}
           >
-            <p className="cursor-pointer rotate-30">
-              <IoMdAttach size={24} />
-            </p>
-            <input
-              className="rounded-lg focus:outline-none h-full w-full px-3"
-              placeholder="| Type message here..."
-              name="userMsg"
-              ref={userMsgRef}
-              onChange={(e) => setUserMsg(e.target.value)}
-            />
-            <button
-              disabled={isTyping}
-              className="rotate-45 cursor-pointer disabled:text-[#5c5c5c] disabled:cursor-not-allowed"
-            >
-              <FiSend size={23} />
-            </button>
+            {!isNewChat && image?.url && (
+              <div className="w-[100px] h-auto p-3 relative lg:w-[150px]">
+                <img
+                  className="w-full h-fit"
+                  src={image?.url}
+                  draggable={false}
+                  alt="img"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <button
+                  onClick={() => setImage(undefined)}
+                  className="absolute top-1 right-0 w-[20px] h-[20px] bg-red-800 rounded-full flex items-center justify-center cursor-pointer"
+                >
+                  <AiOutlineClose size={14} />
+                </button>
+              </div>
+            )}
+            <div className="flex items-center justify-center gap-y-1 h-[67px] py-2 px-5">
+              <div className="cursor-pointer relative">
+                <IoMdAttach size={24} className="rotate-30" />
+                <input
+                  type="file"
+                  accept="image/png, image/jpg, image/jpeg"
+                  className="absolute cursor-pointer top-0 left-0 right-0 bottom-0 appearance-none opacity-0"
+                  maxLength={2 * 1024 * 1024}
+                  name="file"
+                  onChange={handleImageChange}
+                />
+              </div>
+              <input
+                className="rounded-lg focus:outline-none h-full w-full px-3"
+                placeholder="| Type message here..."
+                name="userMsg"
+                ref={userMsgRef}
+                onChange={(e) => setUserMsg(e.target.value)}
+              />
+              <button
+                disabled={isTyping || !userMsg}
+                className="rotate-45 cursor-pointer disabled:text-[#5c5c5c] disabled:cursor-not-allowed"
+              >
+                <FiSend size={23} />
+              </button>
+            </div>
           </form>
         </div>
       </section>

@@ -84,6 +84,8 @@ export default function Login() {
             draggable={false}
             alt="img"
             className="w-[100px] h-auto md:w-[250px] lg:w-[350px]"
+            loading="lazy"
+            decoding="async"
           />
         </div>
         {/* form */}
