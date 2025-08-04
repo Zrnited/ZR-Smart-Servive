@@ -78,8 +78,7 @@ export default function SignUp() {
 
     const checkPassword = validatePassword(signUpForm.password);
     if (checkPassword !== true) return toast.error(checkPassword);
-
-    console.log(signUpForm);
+    
     signUpUser();
   };
 
