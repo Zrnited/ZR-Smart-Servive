@@ -1,14 +1,17 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { GiHamburgerMenu } from "react-icons/gi";
 import { useAppContext } from "../context";
 import { IoMdAttach } from "react-icons/io";
+import { GiSoundWaves } from "react-icons/gi";
 import { AiOutlineClose } from "react-icons/ai";
 import { validateInput } from "../validation";
 import { useNavigate } from "react-router-dom";
-import { FaUserLarge } from "react-icons/fa6";
+import { FaUserLarge, FaCircleStop } from "react-icons/fa6";
 import IntroMessage from "../components/chat/IntroSection";
 import Sidebar from "../components/chat/Sidebar";
 import { useEffect, useRef, useState } from "react";
 import { FiSend } from "react-icons/fi";
+import { FaMicrophone } from "react-icons/fa";
 import ChatBox from "../components/chat/Chat";
 import { getConversations } from "../api/conversation/getConversations";
 import { getConversation } from "../api/conversation/getConversation";
@@ -44,7 +47,6 @@ export default function Chat() {
     thread,
     setThread,
   } = useAppContext();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userMsgRef: any = useRef(null);
   const [openAside, setOpenAside] = useState<boolean>(false);
   // user convos begins
@@ -65,6 +67,70 @@ export default function Chat() {
   const [chatTitle, setChatTitle] = useState<string>("New Query");
   const [image, setImage] = useState<ImageHandler>();
   const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  //speech recognition variables
+  type DictateState = "idle" | "listening" | "stopped" | "error";
+
+  const SpeechRecognition =
+    (window as any).SpeechRecognition ||
+    (window as any).webkitSpeechRecognition;
+  const [transcript, setTranscript] = useState("");
+  // console.log(transcript);
+  const [status, setStatus] = useState<DictateState>("idle");
+  // console.log(status);
+  const recognitionRef = useRef<any>(null);
+
+  const startListening = () => {
+    if (!SpeechRecognition) {
+      setStatus("error");
+      alert("Your browser does not support Speech Recognition.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognitionRef.current = recognition;
+
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = "en-US";
+
+    recognition.onstart = () => setStatus("listening");
+
+    recognition.onresult = (event: any) => {
+      let interimTranscript = "";
+      let finalTranscript = "";
+
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        const result = event.results[i];
+        if (result.isFinal) {
+          finalTranscript += result[0].transcript;
+        } else {
+          interimTranscript += result[0].transcript;
+        }
+      }
+
+      setTranscript((prev) => prev + finalTranscript + interimTranscript);
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error("Speech Recognition Error:", event.error);
+      setStatus("error");
+    };
+
+    recognition.onend = () => {
+      if (status !== "error") setStatus("stopped");
+    };
+
+    recognition.start();
+  };
+
+  const stopListening = () => {
+    recognitionRef.current?.stop();
+    setStatus("stopped");
+    // console.log(transcript);
+    // userMsgRef.current.value = transcript;
+    setTranscript("");
+  };
 
   const sendMessage = async () => {
     if (userMsgRef.current) userMsgRef.current.value = "";
@@ -114,13 +180,18 @@ export default function Chat() {
               return [...prevState, assistantMessage];
             });
             setIsTyping(false);
+            setUserMsg("");
           }
         })
         .catch((error) => {
           setIsTyping(false);
-          console.log(error);
+          // console.log(error);
           setUserMsg("");
-          toast.error(error.message ? error.message : "Failed to send message");
+          toast.error(
+            error.response.data.message
+              ? error.response.data.message
+              : "Failed to send message"
+          );
         });
 
       if (image?.url || image?.file) setImage(undefined);
@@ -236,8 +307,16 @@ export default function Chat() {
 
   useEffect(() => {
     fetchPrevMsgs();
+    userMsgRef.current.focus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (transcript && status === "stopped") {
+      userMsgRef.current.value = transcript;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [transcript]);
 
   useEffect(() => {
     if (messages.msgs) setThread(messages.msgs);
@@ -379,13 +458,34 @@ export default function Chat() {
                   onChange={handleImageChange}
                 />
               </div>
-              <input
-                className="rounded-lg focus:outline-none h-full w-full px-3"
-                placeholder="| Type message here..."
-                name="userMsg"
-                ref={userMsgRef}
-                onChange={(e) => setUserMsg(e.target.value)}
-              />
+              {status === "listening" ? (
+                <div className="flex flex-1 items-center justify-center">
+                  <GiSoundWaves size={30} />
+                </div>
+              ) : (
+                <input
+                  className="rounded-lg focus:outline-none h-full w-full px-3"
+                  placeholder="| Type message here..."
+                  name="userMsg"
+                  ref={userMsgRef}
+                  onChange={(e) => setUserMsg(e.target.value)}
+                />
+              )}
+              <div
+                onClick={
+                  status === "listening" ? stopListening : startListening
+                }
+                className="min-w-[30px] max-w-[30px] h-[30px] rounded-full flex items-center justify-center text-inherit hover:cursor-pointer hover:bg-[#ffffff09] transition delay-100 ease-in-out"
+              >
+                {status !== "listening" ? (
+                  <FaMicrophone size={20} />
+                ) : (
+                  <FaCircleStop />
+                )}
+              </div>
+              {/* <div className="min-w-[30px] max-w-[30px] h-[30px] rounded-full flex items-center justify-center text-inherit hover:cursor-pointer hover:bg-[#ffffff09] transition delay-100 ease-in-out">
+                <FaCircleStop size={20} />
+              </div> */}
               <button
                 disabled={isTyping || !userMsg}
                 className="rotate-45 cursor-pointer disabled:text-[#5c5c5c] disabled:cursor-not-allowed"

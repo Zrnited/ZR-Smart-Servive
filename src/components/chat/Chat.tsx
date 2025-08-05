@@ -18,7 +18,7 @@ export default function ChatBox({
   isTyping,
 }: ChatBoxProps) {
   return (
-    <div className="flex-1 w-full space-y-2 overflow-y-auto max-h-[79vh] activity px-5 sm:max-h-[74vh] lg:px-6 lg:py-5 lg:max-h-[72vh] lg:space-y-5">
+    <div className="flex-1 w-full space-y-2 overflow-y-auto max-h-[79vh] activity px-5 pb-8 sm:max-h-[74vh] lg:px-6 lg:pt-5 lg:pb-5 lg:max-h-[72vh] lg:space-y-5">
       {messages.map((msg, idx) => (
         <div
           key={idx}
@@ -49,7 +49,7 @@ export default function ChatBox({
                   size={18}
                   color={theme === "dark" ? "white" : "#15411F"}
                 />
-                <p>SmartService AI</p>
+                <p>Chidi</p>
               </div>
               <hr className="border-none h-[0.2px] bg-[#b9b9b957]" />
             </div>

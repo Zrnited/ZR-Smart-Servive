@@ -159,7 +159,7 @@ export default function Login() {
               {loading && <Loader size={20} color="white" />}
               <p>{loading ? "Logging in..." : "Continue"}</p>
             </button>
-            <div className="text-center">
+            {/* <div className="text-center">
               <p
                 className={`text-sm transition ease-in-out delay-100 font-semibold cursor-not-allowed lg:text-base ${
                   theme === "dark" ? "text-white" : "text-[#2B2B2B]"
@@ -175,7 +175,7 @@ export default function Login() {
                   Sign up here
                 </Link>
               </p>
-            </div>
+            </div> */}
           </form>
           <p
             className={`text-sm text-center font-medium ${
