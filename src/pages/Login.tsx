@@ -96,6 +96,8 @@ export default function Login() {
               draggable={false}
               alt="logo"
               className="w-[80px] h-auto lg:w-[130px]"
+              loading="lazy"
+              decoding="async"
             />
             <Link
               to={"/"}
@@ -192,6 +194,8 @@ export default function Login() {
             draggable={false}
             alt="img"
             className="w-[200px] h-auto md:w-[350px] lg:w-[500px]"
+            loading="lazy"
+            decoding="async"
           />
         </div>
       </div>

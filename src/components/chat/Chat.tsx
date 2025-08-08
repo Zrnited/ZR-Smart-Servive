@@ -1,6 +1,6 @@
 import { BsStars } from "react-icons/bs";
 import type { Messages } from "../../entities";
-// import ReactMarkdown from "react-markdown";
+import { chidi } from "../../utils/assets";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import Loader from "../loader";
 
@@ -27,7 +27,7 @@ export default function ChatBox({
           }`}
         >
           <div
-            className={`p-3 rounded-lg max-w-[90%] ${
+            className={`p-3 rounded-lg max-w-full lg:max-w-[80%] ${
               msg.sender === "user"
                 ? `${
                     theme === "dark"
@@ -45,11 +45,19 @@ export default function ChatBox({
               }
             >
               <div className="flex flex-row gap-x-2 items-center">
+                <img
+                  src={chidi}
+                  alt="img"
+                  loading="lazy"
+                  decoding="async"
+                  draggable={false}
+                  className="w-[35px] h-[35px] rounded-full lg:w-[40px] lg:h-[40px]"
+                />
+                <p className="text-lg">Chidi</p>
                 <BsStars
                   size={18}
                   color={theme === "dark" ? "white" : "#15411F"}
                 />
-                <p>Chidi</p>
               </div>
               <hr className="border-none h-[0.2px] bg-[#b9b9b957]" />
             </div>
@@ -58,7 +66,7 @@ export default function ChatBox({
                 src={msg.media_url}
                 alt="img"
                 draggable={false}
-                className="w-[200px] mb-2 md:w-[250px] lg:w-[300px]"
+                className="w-[300px] mb-2 rounded-lg md:w-[250px] lg:w-[300px]"
                 loading="lazy"
                 decoding="async"
               />

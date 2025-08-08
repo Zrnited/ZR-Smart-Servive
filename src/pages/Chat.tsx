@@ -7,6 +7,8 @@ import { AiOutlineClose } from "react-icons/ai";
 import { validateInput } from "../validation";
 import { useNavigate } from "react-router-dom";
 import { FaUserLarge, FaCircleStop } from "react-icons/fa6";
+// import RecordRTC, { invokeSaveAsDialog } from "recordrtc";
+import RecordRTC from "recordrtc";
 import IntroMessage from "../components/chat/IntroSection";
 import Sidebar from "../components/chat/Sidebar";
 import { useEffect, useRef, useState } from "react";
@@ -49,7 +51,7 @@ export default function Chat() {
   } = useAppContext();
   const userMsgRef: any = useRef(null);
   const [openAside, setOpenAside] = useState<boolean>(false);
-  // user convos begins
+  // user convos variables begins
   const [conversations, setConversations] = useState<ConversationsController>({
     loader: false,
     user_conversations: undefined,
@@ -58,7 +60,7 @@ export default function Chat() {
     loader: false,
     msgs: undefined,
   });
-  //user convos end
+  //user convos variables end
   const [currConvId, setCurrConvId] = useState<string>();
   const [isNewChat, setIsNewChat] = useState<boolean>(true);
   const [userMsg, setUserMsg] = useState<string>("");
@@ -68,69 +70,14 @@ export default function Chat() {
   const [image, setImage] = useState<ImageHandler>();
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
-  //speech recognition variables
-  type DictateState = "idle" | "listening" | "stopped" | "error";
-
-  const SpeechRecognition =
-    (window as any).SpeechRecognition ||
-    (window as any).webkitSpeechRecognition;
-  const [transcript, setTranscript] = useState("");
-  // console.log(transcript);
-  const [status, setStatus] = useState<DictateState>("idle");
-  // console.log(status);
-  const recognitionRef = useRef<any>(null);
-
-  const startListening = () => {
-    if (!SpeechRecognition) {
-      setStatus("error");
-      alert("Your browser does not support Speech Recognition.");
-      return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognitionRef.current = recognition;
-
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = "en-US";
-
-    recognition.onstart = () => setStatus("listening");
-
-    recognition.onresult = (event: any) => {
-      let interimTranscript = "";
-      let finalTranscript = "";
-
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        const result = event.results[i];
-        if (result.isFinal) {
-          finalTranscript += result[0].transcript;
-        } else {
-          interimTranscript += result[0].transcript;
-        }
-      }
-
-      setTranscript((prev) => prev + finalTranscript + interimTranscript);
-    };
-
-    recognition.onerror = (event: any) => {
-      console.error("Speech Recognition Error:", event.error);
-      setStatus("error");
-    };
-
-    recognition.onend = () => {
-      if (status !== "error") setStatus("stopped");
-    };
-
-    recognition.start();
-  };
-
-  const stopListening = () => {
-    recognitionRef.current?.stop();
-    setStatus("stopped");
-    // console.log(transcript);
-    // userMsgRef.current.value = transcript;
-    setTranscript("");
-  };
+  //speech recognition variables begins
+  const recorderRef = useRef<RecordRTC | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [recording, setRecording] = useState<boolean>(false);
+  // const [transcript, setTranscript] = useState('');
+  // const [loading, setLoading] = useState(false);
+  //speech recognition variables ends
 
   const sendMessage = async () => {
     if (userMsgRef.current) userMsgRef.current.value = "";
@@ -305,6 +252,43 @@ export default function Chat() {
     }
   };
 
+  //RECORDING EVENTS
+  const startRecording = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    streamRef.current = stream;
+
+    const recorder = new RecordRTC(stream, {
+      type: "audio",
+      sampleRate: 48000,
+      checkForInactiveTracks: true,
+      mimeType: "audio/wav",
+      disableLogs: true,
+    });
+    recorder.startRecording();
+    recorderRef.current = recorder;
+    setRecording(true);
+  };
+
+  const stopRecording = async () => {
+    if (!recorderRef.current) return;
+    recorderRef.current.stopRecording(() => {
+      const blob = recorderRef.current?.getBlob();
+      const url = blob ? URL.createObjectURL(blob) : null;
+      setAudioUrl(url);
+      //call transcribe audio API here if needed
+
+      // Optional: save file or upload blob
+      // if (blob) invokeSaveAsDialog(blob, "recording.wav");
+    });
+
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+    setRecording(false);
+  };
+
   useEffect(() => {
     fetchPrevMsgs();
     userMsgRef.current.focus();
@@ -312,11 +296,13 @@ export default function Chat() {
   }, []);
 
   useEffect(() => {
-    if (transcript && status === "stopped") {
-      userMsgRef.current.value = transcript;
+    if (audioUrl) {
+      const audio = new Audio(audioUrl);
+      audio.play();
+      setAudioUrl("");
+      recorderRef.current = null;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [transcript]);
+  }, [audioUrl]);
 
   useEffect(() => {
     if (messages.msgs) setThread(messages.msgs);
@@ -351,7 +337,7 @@ export default function Chat() {
         }`}
       />
       <section
-        className={`flex flex-col h-full md:w-full transition ease-in-out delay-100 ${
+        className={`flex flex-col h-full md:w-full transition ease-in-out delay-100 sm:overflow-hidden ${
           theme === "dark" ? "text-white" : "text-[#333333]"
         }`}
       >
@@ -405,7 +391,10 @@ export default function Chat() {
           {/* text input */}
           {messages.loader && (
             <div className="flex-1 w-full h-[300px] flex flex-col gap-y-1 text-sm items-center justify-center lg:text-lg">
-              <Loader color="white" size={18} />
+              <Loader
+                color={theme === "dark" ? "white" : "#5c5c5c"}
+                size={18}
+              />
               <p>Loading messages...</p>
             </div>
           )}
@@ -446,7 +435,7 @@ export default function Chat() {
                 </button>
               </div>
             )}
-            <div className="flex items-center justify-center gap-y-1 h-[67px] py-2 px-5">
+            <div className="flex items-center justify-center gap-x-0.5 h-[67px] py-2 px-5">
               <div className="cursor-pointer relative">
                 <IoMdAttach size={24} className="rotate-30" />
                 <input
@@ -458,9 +447,9 @@ export default function Chat() {
                   onChange={handleImageChange}
                 />
               </div>
-              {status === "listening" ? (
+              {recording ? (
                 <div className="flex flex-1 items-center justify-center">
-                  <GiSoundWaves size={30} />
+                  <GiSoundWaves size={40} />
                 </div>
               ) : (
                 <input
@@ -472,20 +461,15 @@ export default function Chat() {
                 />
               )}
               <div
-                onClick={
-                  status === "listening" ? stopListening : startListening
-                }
-                className="min-w-[30px] max-w-[30px] h-[30px] rounded-full flex items-center justify-center text-inherit hover:cursor-pointer hover:bg-[#ffffff09] transition delay-100 ease-in-out"
+                onClick={!recording ? startRecording : stopRecording}
+                className="min-w-[30px] max-w-[30px] h-[30px] mr-1 rounded-full flex items-center justify-center text-inherit hover:cursor-pointer hover:bg-[#ffffff09] transition delay-100 ease-in-out"
               >
-                {status !== "listening" ? (
+                {!recording ? (
                   <FaMicrophone size={20} />
                 ) : (
-                  <FaCircleStop />
+                  <FaCircleStop size={20} />
                 )}
               </div>
-              {/* <div className="min-w-[30px] max-w-[30px] h-[30px] rounded-full flex items-center justify-center text-inherit hover:cursor-pointer hover:bg-[#ffffff09] transition delay-100 ease-in-out">
-                <FaCircleStop size={20} />
-              </div> */}
               <button
                 disabled={isTyping || !userMsg}
                 className="rotate-45 cursor-pointer disabled:text-[#5c5c5c] disabled:cursor-not-allowed"

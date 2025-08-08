@@ -12,6 +12,7 @@ import image6 from "../assets/images/image-6.png";
 import image7 from "../assets/images/image-7.png";
 import bottomImage from "../assets/images/login-image.png";
 import avatar from "../assets/images/avatar-chat.png";
+import chidi from "../assets/images/Chidi.png";
 
 export {
   logo,
@@ -28,4 +29,5 @@ export {
   image6,
   image7,
   bottomImage,
+  chidi,
 };
