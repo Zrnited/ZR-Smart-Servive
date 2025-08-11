@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useAppContext } from "../context";
 import { useNavigate } from "react-router-dom";
 import { logo, image5, bottomImage } from "../utils/assets";
+import { AiFillEyeInvisible, AiFillEye } from "react-icons/ai";
 import { useState, useEffect } from "react";
 import type { LoginForm } from "../entities";
 import Loader from "../components/loader";
@@ -18,6 +19,7 @@ export default function Login() {
   });
   const [hasSignedIn, setHasSignedIn] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -117,9 +119,9 @@ export default function Login() {
                 theme === "dark" ? "text-white" : "text-[#333333]"
               }`}
             >
-              Login to Smart Service AI
+              Login to use Smart Service
             </h2>
-            <div className="flex flex-col gap-y-5">
+            <div className="relative flex flex-col gap-y-5">
               {/* email */}
               <input
                 className={`border border-[#B9B9B9] h-[50px] px-3 w-full rounded-lg focus:outline-none transition ease-in-out delay-100 lg:px-5 lg:h-[64px] ${
@@ -139,13 +141,26 @@ export default function Login() {
                     ? "placeholder:text-[#B9B9B9] text-[#B9B9B9]"
                     : "placeholder:text-[#5C5C5C] text-[#333333]"
                 }`}
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
                 onChange={handleChange}
                 placeholder="Password"
               />
+              {/* eye icon */}
+              <i
+                onClick={() => setShowPassword(!showPassword)}
+                className={`absolute bottom-3.5 right-3 transition ease-in-out delay-100 cursor-pointer xl:bottom-5 ${
+                  theme === "dark" ? "text-white" : "text-[#333333]"
+                }`}
+              >
+                {showPassword ? (
+                  <AiFillEye size={20} />
+                ) : (
+                  <AiFillEyeInvisible size={20} />
+                )}
+              </i>
             </div>
-            <div className="text-end">
+            {/* <div className="text-end">
               <p
                 className={`text-sm transition ease-in-out delay-100 font-semibold cursor-not-allowed ${
                   theme === "dark" ? "text-white" : "text-[#2B2B2B]"
@@ -153,7 +168,7 @@ export default function Login() {
               >
                 Forgot password?
               </p>
-            </div>
+            </div> */}
             <button
               disabled={loading || !loginForm.email || !loginForm.password}
               className="bg-[#15411F] rounded-lg h-[50px] text-white font-semibold w-full cursor-pointer flex flex-row items-center gap-x-2 justify-center disabled:bg-[#5c5c5c] disabled:cursor-not-allowed lg:h-[64px]"

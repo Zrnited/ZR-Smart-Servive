@@ -12,13 +12,13 @@ import {
   image5,
   image6,
   image7,
+  chidi,
 } from "../utils/assets";
 import { whySmartService } from "../utils";
 import { useAppContext } from "../context";
 import { Link } from "react-router-dom";
 import { MdDarkMode, MdLightMode } from "react-icons/md";
 import GetStartedBtn from "../components/homepage/GetStartedBtn";
-import { FaRobot } from "react-icons/fa6";
 export default function Home() {
   const { theme, setTheme, user } = useAppContext();
   return (
@@ -101,7 +101,15 @@ export default function Home() {
               } ${user ? "block" : "hidden"}`}
               to={`/c/user${user?.id}`}
             >
-              <FaRobot size={30} />
+              {/* <FaRobot size={30} /> */}
+              <img
+                src={chidi}
+                alt="img"
+                draggable={false}
+                decoding="async"
+                loading="lazy"
+                className="w-[35px] h-[35px] rounded-full lg:w-[40px] lg:h-[40px]"
+              />
             </Link>
           </div>
         </nav>

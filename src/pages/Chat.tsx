@@ -62,6 +62,7 @@ export default function Chat() {
   });
   //user convos variables end
   const [currConvId, setCurrConvId] = useState<string>();
+  const [refetchMsgs, setRefetchMsgs] = useState<boolean>(false);
   const [isNewChat, setIsNewChat] = useState<boolean>(true);
   const [userMsg, setUserMsg] = useState<string>("");
   const [error, setError] = useState<boolean>(false);
@@ -78,6 +79,37 @@ export default function Chat() {
   // const [transcript, setTranscript] = useState('');
   // const [loading, setLoading] = useState(false);
   //speech recognition variables ends
+
+  const fetchPrevMsgs = async () => {
+    if (!accessToken) return toast.error("Unauthenticated");
+
+    setConversations((prevState) => {
+      return {
+        ...prevState,
+        loader: true,
+      };
+    });
+
+    await getConversations(accessToken)
+      .then((resp) => {
+        // console.log(resp);
+        if (resp.data)
+          setConversations({
+            loader: false,
+            user_conversations: resp.data,
+          });
+        if (refetchMsgs === true) setRefetchMsgs(false);
+      })
+      .catch((error) => {
+        console.log(error);
+        setConversations((prevState) => {
+          return {
+            ...prevState,
+            loader: false,
+          };
+        });
+      });
+  };
 
   const sendMessage = async () => {
     if (userMsgRef.current) userMsgRef.current.value = "";
@@ -114,7 +146,8 @@ export default function Chat() {
       )
         .then((resp) => {
           if (resp.status === "success" && resp.data) {
-            setCurrConvId(resp.data.conversation_id);
+            //refetch list of conversations
+            if (!currConvId) setRefetchMsgs(true);
             const assistantMessage: Messages = {
               id: resp.data.conversation_id,
               sender: "ai",
@@ -123,6 +156,7 @@ export default function Chat() {
               media_url: resp.data.media_url ? resp.data.media_url : null,
               created_at: resp.data.created_at ? resp.data.created_at : null,
             };
+            setCurrConvId(resp.data.conversation_id);
             setThread((prevState) => {
               return [...prevState, assistantMessage];
             });
@@ -150,36 +184,6 @@ export default function Chat() {
     const validateMsg = validateInput(userMsg, "message");
     if (validateMsg !== true) toast.error(validateMsg);
     sendMessage();
-  };
-
-  const fetchPrevMsgs = async () => {
-    if (!accessToken) return toast.error("Unauthenticated");
-
-    setConversations((prevState) => {
-      return {
-        ...prevState,
-        loader: true,
-      };
-    });
-
-    await getConversations(accessToken)
-      .then((resp) => {
-        // console.log(resp);
-        if (resp.data)
-          setConversations({
-            loader: false,
-            user_conversations: resp.data,
-          });
-      })
-      .catch((error) => {
-        console.log(error);
-        setConversations((prevState) => {
-          return {
-            ...prevState,
-            loader: false,
-          };
-        });
-      });
   };
 
   const fetchConversation = async (e: string, title: string) => {
@@ -222,6 +226,7 @@ export default function Chat() {
 
   const initiateLogout = () => {
     setAccessToken(undefined);
+    setCurrConvId("");
     setUser(undefined);
     navigate("/", { replace: true });
   };
@@ -294,6 +299,13 @@ export default function Chat() {
     userMsgRef.current.focus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (refetchMsgs === true) {
+      fetchPrevMsgs();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refetchMsgs]);
 
   useEffect(() => {
     if (audioUrl) {

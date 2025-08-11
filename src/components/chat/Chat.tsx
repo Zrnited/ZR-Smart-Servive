@@ -81,8 +81,10 @@ export default function ChatBox({
       {isTyping && (
         <div className="flex justify-start w-full text-xs md:text-sm">
           <div className="flex gap-x-2 items-center">
-            <Loader color="white" size={15} />
-            <p>Smart Service is typing...</p>
+            <Loader color={theme === "dark" ? "white" : "#15411F"} size={15} />
+            <p className={`${theme === "dark" ? "white" : "#15411F"}`}>
+              Smart Service is typing...
+            </p>
           </div>
         </div>
       )}
