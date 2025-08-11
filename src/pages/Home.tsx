@@ -18,9 +18,12 @@ import { whySmartService } from "../utils";
 import { useAppContext } from "../context";
 import { Link } from "react-router-dom";
 import { MdDarkMode, MdLightMode } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
 import GetStartedBtn from "../components/homepage/GetStartedBtn";
+
 export default function Home() {
   const { theme, setTheme, user } = useAppContext();
+  const navigate = useNavigate();
   return (
     <main
       className={`transition ease-in-out delay-100 ${
@@ -86,15 +89,15 @@ export default function Home() {
                 <MdDarkMode size={22} />
               )}
             </button>
-            <Link
-              to={"/login"}
+            <button
+              onClick={() => navigate("/login")}
               className={`flex-row items-center gap-x-1 text-white px-3 py-3 rounded-lg bg-[#15411F] cursor-pointer lg:px-8 ${
                 user ? "hidden" : "flex"
               }`}
             >
               <p>Sign in</p>
               <BsArrowRight className="font-semibold" />
-            </Link>
+            </button>
             <Link
               className={`${
                 theme === "dark" ? "text-white" : "text-[#1b1b1b]"

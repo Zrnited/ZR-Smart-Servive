@@ -7,6 +7,7 @@ import { AiOutlineClose } from "react-icons/ai";
 import { validateInput } from "../validation";
 import { useNavigate } from "react-router-dom";
 import { FaUserLarge, FaCircleStop } from "react-icons/fa6";
+import welcomeSpeech from "../assets/audio/intro-voice.wav";
 // import RecordRTC, { invokeSaveAsDialog } from "recordrtc";
 import RecordRTC from "recordrtc";
 import IntroMessage from "../components/chat/IntroSection";
@@ -297,6 +298,15 @@ export default function Chat() {
   useEffect(() => {
     fetchPrevMsgs();
     userMsgRef.current.focus();
+
+    const welcomeAudio = new Audio(welcomeSpeech);
+    welcomeAudio.playbackRate = 0.8;
+    welcomeAudio.play().catch(console.error);
+
+    return () => {
+      welcomeAudio.pause();
+      welcomeAudio.src = "";
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

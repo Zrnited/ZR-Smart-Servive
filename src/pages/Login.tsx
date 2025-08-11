@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import { useAppContext } from "../context";
 import { useNavigate } from "react-router-dom";
 import { logo, image5, bottomImage } from "../utils/assets";
@@ -101,14 +100,14 @@ export default function Login() {
               loading="lazy"
               decoding="async"
             />
-            <Link
-              to={"/"}
-              className={`uppercase text-lg transition ease-in-out delay-100 lg:text-xl ${
+            <button
+              onClick={() => navigate("/login")}
+              className={`uppercase text-lg transition ease-in-out delay-100 cursor-pointer lg:text-xl ${
                 theme === "dark" ? "text-white" : "text-[#15411F]"
               }`}
             >
               <span className="font-semibold">smart</span>service
-            </Link>
+            </button>
           </div>
           <form
             onSubmit={handleSubmit}
