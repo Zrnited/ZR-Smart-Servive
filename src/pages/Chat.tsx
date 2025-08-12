@@ -63,6 +63,7 @@ export default function Chat() {
   });
   //user convos variables end
   const [currConvId, setCurrConvId] = useState<string>();
+  // console.log("currConvId", currConvId);
   const [refetchMsgs, setRefetchMsgs] = useState<boolean>(false);
   const [isNewChat, setIsNewChat] = useState<boolean>(true);
   const [userMsg, setUserMsg] = useState<string>("");
@@ -76,10 +77,15 @@ export default function Chat() {
   const recorderRef = useRef<RecordRTC | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [voiceNote, setVoiceNote] = useState<Blob>();
   const [recording, setRecording] = useState<boolean>(false);
-  // const [transcript, setTranscript] = useState('');
-  // const [loading, setLoading] = useState(false);
   //speech recognition variables ends
+
+  const setMedia = (): null | string => {
+    if (image?.url) return image.url;
+    if (audioUrl) return audioUrl;
+    return null;
+  };
 
   const fetchPrevMsgs = async () => {
     if (!accessToken) return toast.error("Unauthenticated");
@@ -93,7 +99,6 @@ export default function Chat() {
 
     await getConversations(accessToken)
       .then((resp) => {
-        // console.log(resp);
         if (resp.data)
           setConversations({
             loader: false,
@@ -122,7 +127,7 @@ export default function Chat() {
         id: currConvId ? currConvId : null,
         message: userMsg ? userMsg : "",
         file: image?.file ? image.file : null,
-        voice_note: null,
+        voice_note: voiceNote ? voiceNote : null,
       };
 
       const userMessage: Messages = {
@@ -130,7 +135,7 @@ export default function Chat() {
         sender: "user",
         content: userMsg,
         type: null,
-        media_url: image?.url ? image.url : null,
+        media_url: setMedia(),
         created_at: null,
       };
 
@@ -147,7 +152,6 @@ export default function Chat() {
       )
         .then((resp) => {
           if (resp.status === "success" && resp.data) {
-            //refetch list of conversations
             if (!currConvId) setRefetchMsgs(true);
             const assistantMessage: Messages = {
               id: resp.data.conversation_id,
@@ -163,12 +167,13 @@ export default function Chat() {
             });
             setIsTyping(false);
             setUserMsg("");
+            if (audioUrl) setAudioUrl(null);
           }
         })
         .catch((error) => {
           setIsTyping(false);
-          // console.log(error);
           setUserMsg("");
+          if (audioUrl) setAudioUrl(null);
           toast.error(
             error.response.data.message
               ? error.response.data.message
@@ -240,7 +245,7 @@ export default function Chat() {
     //reveal welcome chat interface
     setIsNewChat(true);
     //reset current chat ID
-    setCurrConvId("");
+    setCurrConvId(undefined);
     //reset thread
     if (thread.length > 1) setThread([]);
     setChatTitle("New Query");
@@ -260,6 +265,9 @@ export default function Chat() {
 
   //RECORDING EVENTS
   const startRecording = async () => {
+    if (userMsgRef.current) userMsgRef.current.value = "";
+    if (image?.url || image?.file) setImage(undefined);
+
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
     streamRef.current = stream;
@@ -280,10 +288,10 @@ export default function Chat() {
     if (!recorderRef.current) return;
     recorderRef.current.stopRecording(() => {
       const blob = recorderRef.current?.getBlob();
+      if (blob) setVoiceNote(blob);
+      console.log(blob);
       const url = blob ? URL.createObjectURL(blob) : null;
       setAudioUrl(url);
-      //call transcribe audio API here if needed
-
       // Optional: save file or upload blob
       // if (blob) invokeSaveAsDialog(blob, "recording.wav");
     });
@@ -319,11 +327,10 @@ export default function Chat() {
 
   useEffect(() => {
     if (audioUrl) {
-      const audio = new Audio(audioUrl);
-      audio.play();
-      setAudioUrl("");
+      sendMessage();
       recorderRef.current = null;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [audioUrl]);
 
   useEffect(() => {
@@ -351,6 +358,7 @@ export default function Chat() {
         openAside={openAside}
         theme={theme}
         initiateNewChat={initiateNewChat}
+        currConvId={currConvId}
       />
       <div
         onClick={() => setOpenAside(false)}
@@ -372,7 +380,9 @@ export default function Chat() {
               <GiHamburgerMenu size={20} />
             </button>
             <h2 className="text-lg font-bold">
-              {chatTitle.slice(0, 12).concat("...")}
+              {chatTitle.length > 15
+                ? chatTitle.slice(0, 15).concat("...")
+                : chatTitle}
             </h2>
           </div>
           <div className="flex flex-row gap-x-2 items-center">
@@ -439,6 +449,7 @@ export default function Chat() {
                 : "bg-[#EBEBEB] text-[#333333]"
             } ${messages.loader || error ? "hidden" : "flex"}`}
           >
+            {/* image preview */}
             {!isNewChat && image?.url && (
               <div className="w-[100px] h-auto p-3 relative lg:w-[150px]">
                 <img
@@ -479,7 +490,10 @@ export default function Chat() {
                   placeholder="| Type message here..."
                   name="userMsg"
                   ref={userMsgRef}
-                  onChange={(e) => setUserMsg(e.target.value)}
+                  onChange={(e) => {
+                    if (voiceNote) setVoiceNote(undefined);
+                    setUserMsg(e.target.value);
+                  }}
                 />
               )}
               <div

@@ -61,7 +61,7 @@ export default function ChatBox({
               </div>
               <hr className="border-none h-[0.2px] bg-[#b9b9b957]" />
             </div>
-            {msg.media_url && (
+            {msg.media_url?.includes("image") && (
               <img
                 src={msg.media_url}
                 alt="img"
@@ -69,6 +69,13 @@ export default function ChatBox({
                 className="w-[300px] mb-2 rounded-lg md:w-[250px] lg:w-[300px]"
                 loading="lazy"
                 decoding="async"
+              />
+            )}
+            {msg.media_url?.includes("localhost") && (
+              <audio
+                onContextMenu={(e) => e.preventDefault()}
+                controls
+                src={msg.media_url}
               />
             )}
             <MarkdownPreview

@@ -23,6 +23,7 @@ interface SidebarProps {
     title: string
   ) => Promise<string | number | undefined>;
   initiateLogout: () => void;
+  currConvId: string | undefined;
 }
 
 export default function Sidebar({
@@ -34,6 +35,7 @@ export default function Sidebar({
   fetchConversation,
   initiateLogout,
   initiateNewChat,
+  currConvId,
 }: SidebarProps) {
   return (
     <aside
@@ -131,7 +133,9 @@ export default function Sidebar({
                     setOpenAside(false);
                   }}
                   key={index}
-                  className="flex flex-row gap-x-4 p-1.5 hover:cursor-pointer hover:bg-[#5c5c5c21] rounded-lg transition delay-100 ease-in-out lg:gap-x-2"
+                  className={`flex flex-row gap-x-4 p-1.5 hover:cursor-pointer hover:bg-[#5c5c5c21] rounded-lg transition delay-100 ease-in-out lg:gap-x-2 ${
+                    currConvId === chat.id ? "bg-[#5c5c5c21]" : "bg-transparent"
+                  }`}
                 >
                   <FaRegCommentDots size={22} />
                   <div
