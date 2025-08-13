@@ -54,5 +54,6 @@ export interface Messages {
   content: string;
   type: string | null;
   media_url: string | null;
+  media_type: "audio" | "image" | null;
   created_at: string | null;
 }

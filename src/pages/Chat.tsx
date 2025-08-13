@@ -8,7 +8,6 @@ import { validateInput } from "../validation";
 import { useNavigate } from "react-router-dom";
 import { FaUserLarge, FaCircleStop } from "react-icons/fa6";
 import welcomeSpeech from "../assets/audio/intro-voice.wav";
-// import RecordRTC, { invokeSaveAsDialog } from "recordrtc";
 import RecordRTC from "recordrtc";
 import IntroMessage from "../components/chat/IntroSection";
 import Sidebar from "../components/chat/Sidebar";
@@ -62,8 +61,8 @@ export default function Chat() {
     msgs: undefined,
   });
   //user convos variables end
+
   const [currConvId, setCurrConvId] = useState<string>();
-  // console.log("currConvId", currConvId);
   const [refetchMsgs, setRefetchMsgs] = useState<boolean>(false);
   const [isNewChat, setIsNewChat] = useState<boolean>(true);
   const [userMsg, setUserMsg] = useState<string>("");
@@ -80,6 +79,17 @@ export default function Chat() {
   const [voiceNote, setVoiceNote] = useState<Blob>();
   const [recording, setRecording] = useState<boolean>(false);
   //speech recognition variables ends
+
+  //search history
+  const [searchText, setSearchText] = useState<string>("");
+  const [queries, setQueries] = useState<UserConversations[]>();
+
+  const filterSearchText = (text: string) => {
+    const filteredArr = conversations.user_conversations?.filter((conv) =>
+      conv.title.toLowerCase().includes(text.toLowerCase())
+    );
+    return filteredArr ? filteredArr : [];
+  };
 
   const setMedia = (): null | string => {
     if (image?.url) return image.url;
@@ -104,6 +114,7 @@ export default function Chat() {
             loader: false,
             user_conversations: resp.data,
           });
+        setQueries(resp.data);
         if (refetchMsgs === true) setRefetchMsgs(false);
       })
       .catch((error) => {
@@ -123,6 +134,7 @@ export default function Chat() {
     setIsTyping(true);
 
     if (accessToken) {
+      //data setup sent to the server
       const data = {
         id: currConvId ? currConvId : null,
         message: userMsg ? userMsg : "",
@@ -130,15 +142,18 @@ export default function Chat() {
         voice_note: voiceNote ? voiceNote : null,
       };
 
+      //user message object added to thread array
       const userMessage: Messages = {
         id: currConvId ? currConvId : "",
         sender: "user",
         content: userMsg,
         type: null,
         media_url: setMedia(),
+        media_type: audioUrl ? "audio" : image?.url ? "image" : null,
         created_at: null,
       };
 
+      //push the object to thread array
       setThread((prevState) => {
         return [...prevState, userMessage];
       });
@@ -153,27 +168,38 @@ export default function Chat() {
         .then((resp) => {
           if (resp.status === "success" && resp.data) {
             if (!currConvId) setRefetchMsgs(true);
+            //create assistant message object
             const assistantMessage: Messages = {
               id: resp.data.conversation_id,
               sender: "ai",
               content: resp.data.reply,
               type: resp.data.type ? resp.data.type : null,
               media_url: resp.data.media_url ? resp.data.media_url : null,
+              media_type: resp.data.media_url.includes(".webm")
+                ? "audio"
+                : resp.data.media_url.includes("image")
+                ? "image"
+                : null,
               created_at: resp.data.created_at ? resp.data.created_at : null,
             };
+            //set chat id
             setCurrConvId(resp.data.conversation_id);
+            //push assistant message object to thread array
             setThread((prevState) => {
               return [...prevState, assistantMessage];
             });
+            //reset other states
             setIsTyping(false);
             setUserMsg("");
             if (audioUrl) setAudioUrl(null);
+            if (voiceNote) setVoiceNote(undefined);
           }
         })
         .catch((error) => {
           setIsTyping(false);
           setUserMsg("");
           if (audioUrl) setAudioUrl(null);
+          if (voiceNote) setVoiceNote(undefined);
           toast.error(
             error.response.data.message
               ? error.response.data.message
@@ -234,6 +260,7 @@ export default function Chat() {
     setAccessToken(undefined);
     setCurrConvId("");
     setUser(undefined);
+    setThread([]);
     navigate("/", { replace: true });
   };
 
@@ -254,6 +281,8 @@ export default function Chat() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const systemfile = e.target.files?.[0];
     if (systemfile) {
+      if (isNewChat) setIsNewChat(false);
+      if (audioUrl) setAudioUrl(null);
       const localURL = URL.createObjectURL(systemfile);
       // setImageURL(localURL);
       setImage({
@@ -276,7 +305,7 @@ export default function Chat() {
       type: "audio",
       sampleRate: 48000,
       checkForInactiveTracks: true,
-      mimeType: "audio/wav",
+      mimeType: "audio/webm",
       disableLogs: true,
     });
     recorder.startRecording();
@@ -288,10 +317,11 @@ export default function Chat() {
     if (!recorderRef.current) return;
     recorderRef.current.stopRecording(() => {
       const blob = recorderRef.current?.getBlob();
-      if (blob) setVoiceNote(blob);
-      console.log(blob);
-      const url = blob ? URL.createObjectURL(blob) : null;
-      setAudioUrl(url);
+      if (blob) {
+        setVoiceNote(blob);
+        const url = blob ? URL.createObjectURL(blob) : null;
+        setAudioUrl(url);
+      }
       // Optional: save file or upload blob
       // if (blob) invokeSaveAsDialog(blob, "recording.wav");
     });
@@ -304,9 +334,11 @@ export default function Chat() {
   };
 
   useEffect(() => {
+    //fetch all queries and focus on input text
     fetchPrevMsgs();
     userMsgRef.current.focus();
 
+    //welcome speech by Chidi
     const welcomeAudio = new Audio(welcomeSpeech);
     welcomeAudio.playbackRate = 0.8;
     welcomeAudio.play().catch(console.error);
@@ -319,6 +351,16 @@ export default function Chat() {
   }, []);
 
   useEffect(() => {
+    if (searchText === "") {
+      setQueries(conversations.user_conversations);
+    } else {
+      setQueries(filterSearchText(searchText));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchText]);
+
+  useEffect(() => {
+    //if a new query is started, fetch previous queries
     if (refetchMsgs === true) {
       fetchPrevMsgs();
     }
@@ -339,6 +381,7 @@ export default function Chat() {
   }, [messages.msgs]);
 
   useEffect(() => {
+    //smooth scroll to bottom of chat
     bottomRef?.current?.scrollIntoView({ behavior: "smooth" });
   }, [thread]);
 
@@ -359,6 +402,8 @@ export default function Chat() {
         theme={theme}
         initiateNewChat={initiateNewChat}
         currConvId={currConvId}
+        setSearchText={setSearchText}
+        queries={queries}
       />
       <div
         onClick={() => setOpenAside(false)}
@@ -477,7 +522,11 @@ export default function Chat() {
                   className="absolute cursor-pointer top-0 left-0 right-0 bottom-0 appearance-none opacity-0"
                   maxLength={2 * 1024 * 1024}
                   name="file"
-                  onChange={handleImageChange}
+                  onChange={(e) => {
+                    if (voiceNote) setVoiceNote(undefined);
+                    if (audioUrl) setAudioUrl(null);
+                    handleImageChange(e);
+                  }}
                 />
               </div>
               {recording ? (
@@ -492,6 +541,7 @@ export default function Chat() {
                   ref={userMsgRef}
                   onChange={(e) => {
                     if (voiceNote) setVoiceNote(undefined);
+                    if (audioUrl) setAudioUrl(null);
                     setUserMsg(e.target.value);
                   }}
                 />
@@ -503,7 +553,7 @@ export default function Chat() {
                 {!recording ? (
                   <FaMicrophone size={20} />
                 ) : (
-                  <FaCircleStop size={20} />
+                  <FaCircleStop size={25} />
                 )}
               </div>
               <button

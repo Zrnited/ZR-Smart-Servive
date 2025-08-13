@@ -61,6 +61,7 @@ export default function ChatBox({
               </div>
               <hr className="border-none h-[0.2px] bg-[#b9b9b957]" />
             </div>
+            {/* server image handling */}
             {msg.media_url?.includes("image") && (
               <img
                 src={msg.media_url}
@@ -71,16 +72,36 @@ export default function ChatBox({
                 decoding="async"
               />
             )}
-            {msg.media_url?.includes("localhost") && (
-              <audio
-                onContextMenu={(e) => e.preventDefault()}
-                controls
-                src={msg.media_url}
-              />
+            {/* client image handling */}
+            {msg.media_url?.includes("localhost") &&
+              msg.media_type === "image" && (
+                <img
+                  src={msg.media_url}
+                  alt="img"
+                  draggable={false}
+                  className="w-[300px] mb-2 rounded-lg md:w-[250px] lg:w-[300px]"
+                  loading="lazy"
+                  decoding="async"
+                />
+              )}
+            {/* client audio handling */}
+            {msg.media_url?.includes("localhost") &&
+              msg.media_type === "audio" && (
+                <audio
+                  onContextMenu={(e) => e.preventDefault()}
+                  controls
+                  src={msg.media_url}
+                />
+              )}
+            {/* server audio handling */}
+            {msg.media_url?.includes(".webm") && (
+              <audio onContextMenu={(e) => e.preventDefault()} controls>
+                <source src={msg.media_url} type="audio/wav" />
+              </audio>
             )}
             <MarkdownPreview
               style={{ backgroundColor: "transparent", color: "inherit" }}
-              source={msg.content}
+              source={msg.media_url?.includes(".webm") ? "" : msg.content}
             />
           </div>
         </div>
@@ -90,7 +111,7 @@ export default function ChatBox({
           <div className="flex gap-x-2 items-center">
             <Loader color={theme === "dark" ? "white" : "#15411F"} size={15} />
             <p className={`${theme === "dark" ? "white" : "#15411F"}`}>
-              Smart Service is typing...
+              Chidi is typing...
             </p>
           </div>
         </div>

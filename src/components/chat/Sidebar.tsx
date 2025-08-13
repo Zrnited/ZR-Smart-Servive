@@ -7,6 +7,7 @@ import type { ConversationsController } from "../../pages/Chat";
 import Loader from "../loader";
 import { Link } from "react-router-dom";
 import { AiOutlineLogout } from "react-icons/ai";
+import type { UserConversations } from "../../entities";
 
 interface SidebarProps {
   theme: "dark" | "light";
@@ -24,6 +25,8 @@ interface SidebarProps {
   ) => Promise<string | number | undefined>;
   initiateLogout: () => void;
   currConvId: string | undefined;
+  setSearchText: React.Dispatch<React.SetStateAction<string>>;
+  queries: UserConversations[] | undefined;
 }
 
 export default function Sidebar({
@@ -36,6 +39,8 @@ export default function Sidebar({
   initiateLogout,
   initiateNewChat,
   currConvId,
+  setSearchText,
+  queries,
 }: SidebarProps) {
   return (
     <aside
@@ -79,6 +84,7 @@ export default function Sidebar({
             }`}
             placeholder="Search"
             name="searchbar"
+            onChange={(e) => setSearchText(e.target.value)}
           />
           <CiSearch className="absolute left-3.5 top-3" size={17} />
         </div>
@@ -119,13 +125,12 @@ export default function Sidebar({
             history.length > 5 && "pb-1"
           }`}
         >
+          {!conversations.loader && queries?.length === 0 && (
+            <p className="text-sm font-semibold">No queries found.</p>
+          )}
           {!conversations.loader &&
-            conversations.user_conversations?.length === 0 && (
-              <p className="text-sm font-semibold">No queries found.</p>
-            )}
-          {!conversations.loader &&
-            conversations.user_conversations?.length !== 0 &&
-            conversations.user_conversations?.map((chat, index) => {
+            queries?.length !== 0 &&
+            queries?.map((chat, index) => {
               return (
                 <div
                   onClick={() => {
@@ -144,7 +149,9 @@ export default function Sidebar({
                     }`}
                   >
                     <h3 className="font-semibold">
-                      {chat.title.slice(0, 18).concat("...")}
+                      {chat.title.length > 15
+                        ? chat.title.slice(0, 15).concat("...")
+                        : chat.title}
                     </h3>
                     <p className="text-xs">{`${
                       formatTimestamp(chat.last_updated).formattedDate
