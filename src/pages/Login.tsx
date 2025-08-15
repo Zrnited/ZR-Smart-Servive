@@ -101,12 +101,12 @@ export default function Login() {
               decoding="async"
             />
             <button
-              onClick={() => navigate("/login")}
-              className={`uppercase text-lg transition ease-in-out delay-100 cursor-pointer lg:text-xl ${
+              onClick={() => navigate("/")}
+              className={`uppercase text-lg transition ease-in-out delay-100 cursor-pointer font-bold lg:text-xl ${
                 theme === "dark" ? "text-white" : "text-[#15411F]"
               }`}
             >
-              <span className="font-semibold">smart</span>service
+              CHIDI
             </button>
           </div>
           <form
@@ -118,7 +118,7 @@ export default function Login() {
                 theme === "dark" ? "text-white" : "text-[#333333]"
               }`}
             >
-              Login to use Smart Service
+              Login to use Chidi
             </h2>
             <div className="relative flex flex-col gap-y-5">
               {/* email */}

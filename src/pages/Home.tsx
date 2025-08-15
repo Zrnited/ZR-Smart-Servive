@@ -47,11 +47,11 @@ export default function Home() {
               decoding="async"
             />
             <p
-              className={`uppercase transition ease-in-out delay-100 ${
+              className={`uppercase transition ease-in-out font-bold delay-100 ${
                 theme === "dark" ? "text-[#fefefe]" : "text-[#154411F]"
               }`}
             >
-              <span className="font-semibold">smart</span>service
+              chidi
             </p>
           </div>
           <div className="flex items-center gap-x-3 text-sm lg:text-base lg:gap-x-10">
@@ -130,7 +130,7 @@ export default function Home() {
             theme === "dark" ? "text-[#fefefe]" : "text-[#15411F]"
           }`}
         >
-          meet abia smartservice AI
+          meet CHIDI,
         </h2>
         <h3
           className={`font-bold text-2xl text-center lg:text-5xl lg:max-w-[563px] transition ease-in-out delay-100 ${
@@ -167,12 +167,11 @@ export default function Home() {
             theme === "dark" ? "text-[#fefefe]" : "text-[#333333]"
           }`}
         >
-          SMART SERVICE is a powerful AI-powered assistant purpose-built to
-          support Abia State public servants with their day-to-day
-          administrative tasks. Whether it’s drafting memos, generating
-          insightful reports, performing data analysis, or managing civil
-          service correspondence, SMARTSERVICE does it all — efficiently and
-          accurately.
+          CHIDI is a powerful AI-powered assistant purpose-built to support Abia
+          State public servants with their day-to-day administrative tasks.
+          Whether it’s drafting memos, generating insightful reports, performing
+          data analysis, or managing civil service correspondence, CHIDI does it
+          all — efficiently and accurately.
         </p>
         <GetStartedBtn />
         {/* hero floating image */}
@@ -201,7 +200,7 @@ export default function Home() {
             theme === "dark" ? "text-[#fefefe]" : "text-[#333333]"
           }`}
         >
-          What SmartService can do.
+          What CHIDI can do.
         </h1>
         <div className="mt-5 w-fit xl:px-10">
           {/* first two */}
@@ -348,7 +347,7 @@ export default function Home() {
           <GetStartedBtn />
         </div>
       </section>
-      {/* why smart service section */}
+      {/* why chidi section */}
       <section
         className={`transition ease-in-out delay-100 flex ${
           theme === "dark"
@@ -368,13 +367,11 @@ export default function Home() {
           <div
             className={`flex flex-col gap-y-3 items-center text-center p-3 lg:gap-y-5 lg:items-start lg:text-start`}
           >
-            <h4 className="text-2xl font-semibold lg:text-4xl">
-              Why SmartService?
-            </h4>
+            <h4 className="text-2xl font-semibold lg:text-4xl">Why Chidi?</h4>
             <p className="text-base font-medium lg:text-lg">
-              SMART SERVICE is a powerful AI-powered assistant purpose-built to
-              support Abia State public servants with their day-to-day
-              administrative tasks.
+              CHIDI is a powerful AI-powered assistant purpose-built to support
+              Abia State public servants with their day-to-day administrative
+              tasks.
             </p>
           </div>
           <div className="flex flex-col gap-y-5">
@@ -413,7 +410,7 @@ export default function Home() {
             </h4>
             <p className="text-sm font-medium lg:text-lg">
               Whether you're a senior director, head of department, or
-              administrative officer, SmartService is designed to make your work
+              administrative officer, Chidi is designed to make your work
               smoother and more productive.
             </p>
             <GetStartedBtn />

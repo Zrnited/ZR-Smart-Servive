@@ -67,11 +67,11 @@ export default function Sidebar({
             draggable={false}
           />
           <p
-            className={`uppercase transition ease-in-out delay-100 ${
+            className={`uppercase transition ease-in-out font-bold delay-100 ${
               theme === "dark" ? "text-[#fefefe]" : "text-[#15411F]"
             }`}
           >
-            <span className="font-semibold">smart</span>service
+            CHIDI
           </p>
         </Link>
         {/* searchbar */}

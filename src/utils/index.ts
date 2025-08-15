@@ -15,11 +15,11 @@ const whySmartService: WhyUs[] = [
   },
   {
     title: "Always Available",
-    info: "SmartService works 24/7 — no fatigue, no downtime.",
+    info: "Chidi works 24/7 — no fatigue, no downtime.",
   },
   {
     title: "Easy to Use",
-    info: "No special training required. If you can send an email, you can use SmartService.",
+    info: "No special training required. If you can send an email, you can use Chidi.",
   },
 ];
 

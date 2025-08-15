@@ -62,7 +62,7 @@ export default function ChatBox({
               <hr className="border-none h-[0.2px] bg-[#b9b9b957]" />
             </div>
             {/* server image handling */}
-            {msg.media_url?.includes("image") && (
+            {msg.media_url && msg.media_url?.includes("image") && (
               <img
                 src={msg.media_url}
                 alt="img"
@@ -73,7 +73,8 @@ export default function ChatBox({
               />
             )}
             {/* client image handling */}
-            {msg.media_url?.includes("localhost") &&
+            {msg.media_url &&
+              msg.media_url?.includes("localhost") &&
               msg.media_type === "image" && (
                 <img
                   src={msg.media_url}
@@ -85,7 +86,8 @@ export default function ChatBox({
                 />
               )}
             {/* client audio handling */}
-            {msg.media_url?.includes("localhost") &&
+            {msg.media_url &&
+              msg.media_url?.includes("localhost") &&
               msg.media_type === "audio" && (
                 <audio
                   onContextMenu={(e) => e.preventDefault()}
@@ -94,7 +96,7 @@ export default function ChatBox({
                 />
               )}
             {/* server audio handling */}
-            {msg.media_url?.includes(".webm") && (
+            {msg.media_url && msg.media_url?.includes(".webm") && (
               <audio onContextMenu={(e) => e.preventDefault()} controls>
                 <source src={msg.media_url} type="audio/wav" />
               </audio>
@@ -102,6 +104,7 @@ export default function ChatBox({
             <MarkdownPreview
               style={{ backgroundColor: "transparent", color: "inherit" }}
               source={msg.media_url?.includes(".webm") ? "" : msg.content}
+              // source={msg.content}
             />
           </div>
         </div>

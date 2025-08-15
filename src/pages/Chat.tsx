@@ -49,6 +49,7 @@ export default function Chat() {
     thread,
     setThread,
   } = useAppContext();
+  // console.log(thread);
   const userMsgRef: any = useRef(null);
   const [openAside, setOpenAside] = useState<boolean>(false);
   // user convos variables begins
@@ -128,6 +129,13 @@ export default function Chat() {
       });
   };
 
+  const setMediaType = (url: string): "image" | "audio" | null => {
+    if (!url) return null;
+    if (url.includes(".webm")) return "audio";
+    if (url.includes("image")) return "image";
+    return null;
+  };
+
   const sendMessage = async () => {
     if (userMsgRef.current) userMsgRef.current.value = "";
     if (isNewChat) setIsNewChat(false);
@@ -175,11 +183,7 @@ export default function Chat() {
               content: resp.data.reply,
               type: resp.data.type ? resp.data.type : null,
               media_url: resp.data.media_url ? resp.data.media_url : null,
-              media_type: resp.data.media_url.includes(".webm")
-                ? "audio"
-                : resp.data.media_url.includes("image")
-                ? "image"
-                : null,
+              media_type: setMediaType(resp.data.media_url),
               created_at: resp.data.created_at ? resp.data.created_at : null,
             };
             //set chat id
