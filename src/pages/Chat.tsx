@@ -49,7 +49,6 @@ export default function Chat() {
     thread,
     setThread,
   } = useAppContext();
-  // console.log(thread);
   const userMsgRef: any = useRef(null);
   const [openAside, setOpenAside] = useState<boolean>(false);
   // user convos variables begins
@@ -79,6 +78,8 @@ export default function Chat() {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [voiceNote, setVoiceNote] = useState<Blob>();
   const [recording, setRecording] = useState<boolean>(false);
+  const [changeAudio, setChangeAudio] = useState<boolean>(false);
+  const [newMediaUrl, setNewMediaUrl] = useState<string>();
   //speech recognition variables ends
 
   //search history
@@ -90,6 +91,19 @@ export default function Chat() {
       conv.title.toLowerCase().includes(text.toLowerCase())
     );
     return filteredArr ? filteredArr : [];
+  };
+
+  const updateAudioUrl = async (updatedUrl: string) => {
+    if (thread.length !== 1) {
+      const user_audio_message = thread[thread.length - 2];
+      setThread((prev) =>
+        prev.map((item) =>
+          item === user_audio_message
+            ? { ...item, media_url: updatedUrl }
+            : item
+        )
+      );
+    }
   };
 
   const setMedia = (): null | string => {
@@ -192,6 +206,11 @@ export default function Chat() {
             setThread((prevState) => {
               return [...prevState, assistantMessage];
             });
+            //update audio url if need be
+            if (resp.data.voice_url) {
+              setChangeAudio(true);
+              setNewMediaUrl(resp.data.voice_url);
+            }
             //reset other states
             setIsTyping(false);
             setUserMsg("");
@@ -209,6 +228,8 @@ export default function Chat() {
               ? error.response.data.message
               : "Failed to send message"
           );
+          // toast.error("Failed to send message");
+          // console.log(error);
         });
 
       if (image?.url || image?.file) setImage(undefined);
@@ -301,6 +322,9 @@ export default function Chat() {
     if (userMsgRef.current) userMsgRef.current.value = "";
     if (image?.url || image?.file) setImage(undefined);
 
+    if (changeAudio) setChangeAudio(false);
+    if (newMediaUrl) setNewMediaUrl(undefined);
+
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
     streamRef.current = stream;
@@ -323,11 +347,10 @@ export default function Chat() {
       const blob = recorderRef.current?.getBlob();
       if (blob) {
         setVoiceNote(blob);
-        const url = blob ? URL.createObjectURL(blob) : null;
-        setAudioUrl(url);
+        // const url = blob ? URL.createObjectURL(blob) : null;
+        // setAudioUrl(url);
+        setAudioUrl("Processing audio...");
       }
-      // Optional: save file or upload blob
-      // if (blob) invokeSaveAsDialog(blob, "recording.wav");
     });
 
     if (streamRef.current) {
@@ -378,6 +401,13 @@ export default function Chat() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [audioUrl]);
+
+  useEffect(() => {
+    if (changeAudio) {
+      if (newMediaUrl) updateAudioUrl(newMediaUrl);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [changeAudio]);
 
   useEffect(() => {
     if (messages.msgs) setThread(messages.msgs);
@@ -529,6 +559,8 @@ export default function Chat() {
                   onChange={(e) => {
                     if (voiceNote) setVoiceNote(undefined);
                     if (audioUrl) setAudioUrl(null);
+                    if (changeAudio) setChangeAudio(false);
+                    if (newMediaUrl) setNewMediaUrl(undefined);
                     handleImageChange(e);
                   }}
                 />
@@ -546,6 +578,8 @@ export default function Chat() {
                   onChange={(e) => {
                     if (voiceNote) setVoiceNote(undefined);
                     if (audioUrl) setAudioUrl(null);
+                    if (changeAudio) setChangeAudio(false);
+                    if (newMediaUrl) setNewMediaUrl(undefined);
                     setUserMsg(e.target.value);
                   }}
                 />

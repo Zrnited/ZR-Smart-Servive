@@ -87,13 +87,19 @@ export default function ChatBox({
               )}
             {/* client audio handling */}
             {msg.media_url &&
-              msg.media_url?.includes("localhost") &&
+              msg.media_url?.includes("Processing") &&
               msg.media_type === "audio" && (
-                <audio
-                  onContextMenu={(e) => e.preventDefault()}
-                  controls
-                  src={msg.media_url}
-                />
+                // <audio
+                //   onContextMenu={(e) => e.preventDefault()}
+                //   controls
+                //   src={msg.media_url}
+                // />
+                <div>
+                  <MarkdownPreview
+                    style={{ backgroundColor: "transparent", color: "inherit" }}
+                    source={msg.media_url}
+                  />
+                </div>
               )}
             {/* server audio handling */}
             {msg.media_url && msg.media_url?.includes(".webm") && (
