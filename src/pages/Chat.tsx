@@ -7,7 +7,7 @@ import { AiOutlineClose } from "react-icons/ai";
 import { validateInput } from "../validation";
 import { useNavigate } from "react-router-dom";
 import { FaUserLarge, FaCircleStop } from "react-icons/fa6";
-import welcomeSpeech from "../assets/audio/intro-voice.wav";
+// import welcomeSpeech from "../assets/audio/intro-voice.wav";
 import RecordRTC from "recordrtc";
 import IntroMessage from "../components/chat/IntroSection";
 import Sidebar from "../components/chat/Sidebar";
@@ -35,6 +35,7 @@ export interface UserConversation {
 interface ImageHandler {
   url: string;
   file: File;
+  previewImage: string;
 }
 
 export default function Chat() {
@@ -78,7 +79,7 @@ export default function Chat() {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [voiceNote, setVoiceNote] = useState<Blob>();
   const [recording, setRecording] = useState<boolean>(false);
-  const [changeAudio, setChangeAudio] = useState<boolean>(false);
+  const [switchMediaUrl, setSwitchMediaUrl] = useState<boolean>(false);
   const [newMediaUrl, setNewMediaUrl] = useState<string>();
   //speech recognition variables ends
 
@@ -93,12 +94,12 @@ export default function Chat() {
     return filteredArr ? filteredArr : [];
   };
 
-  const updateAudioUrl = async (updatedUrl: string) => {
+  const updateMediaUrl = async (updatedUrl: string) => {
     if (thread.length !== 1) {
-      const user_audio_message = thread[thread.length - 2];
+      const user_media_message = thread[thread.length - 2];
       setThread((prev) =>
         prev.map((item) =>
-          item === user_audio_message
+          item === user_media_message
             ? { ...item, media_url: updatedUrl }
             : item
         )
@@ -206,10 +207,15 @@ export default function Chat() {
             setThread((prevState) => {
               return [...prevState, assistantMessage];
             });
-            //update audio url if need be
+            //update audio url
             if (resp.data.voice_url) {
-              setChangeAudio(true);
+              setSwitchMediaUrl(true);
               setNewMediaUrl(resp.data.voice_url);
+            }
+            // //update image url
+            if (resp.data.file_url) {
+              setSwitchMediaUrl(true);
+              setNewMediaUrl(resp.data.file_url);
             }
             //reset other states
             setIsTyping(false);
@@ -311,8 +317,9 @@ export default function Chat() {
       const localURL = URL.createObjectURL(systemfile);
       // setImageURL(localURL);
       setImage({
-        url: localURL,
+        url: "Processing figure...",
         file: systemfile,
+        previewImage: localURL,
       });
     }
   };
@@ -322,7 +329,7 @@ export default function Chat() {
     if (userMsgRef.current) userMsgRef.current.value = "";
     if (image?.url || image?.file) setImage(undefined);
 
-    if (changeAudio) setChangeAudio(false);
+    if (switchMediaUrl) setSwitchMediaUrl(false);
     if (newMediaUrl) setNewMediaUrl(undefined);
 
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -366,14 +373,14 @@ export default function Chat() {
     userMsgRef.current.focus();
 
     //welcome speech by Chidi
-    const welcomeAudio = new Audio(welcomeSpeech);
-    welcomeAudio.playbackRate = 0.8;
-    welcomeAudio.play().catch(console.error);
+    // const welcomeAudio = new Audio(welcomeSpeech);
+    // welcomeAudio.playbackRate = 0.8;
+    // welcomeAudio.play().catch(console.error);
 
-    return () => {
-      welcomeAudio.pause();
-      welcomeAudio.src = "";
-    };
+    // return () => {
+    //   welcomeAudio.pause();
+    //   welcomeAudio.src = "";
+    // };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -403,11 +410,11 @@ export default function Chat() {
   }, [audioUrl]);
 
   useEffect(() => {
-    if (changeAudio) {
-      if (newMediaUrl) updateAudioUrl(newMediaUrl);
+    if (switchMediaUrl) {
+      if (newMediaUrl) updateMediaUrl(newMediaUrl);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [changeAudio]);
+  }, [switchMediaUrl]);
 
   useEffect(() => {
     if (messages.msgs) setThread(messages.msgs);
@@ -529,11 +536,11 @@ export default function Chat() {
             } ${messages.loader || error ? "hidden" : "flex"}`}
           >
             {/* image preview */}
-            {!isNewChat && image?.url && (
+            {!isNewChat && image?.previewImage && (
               <div className="w-[100px] h-auto p-3 relative lg:w-[150px]">
                 <img
                   className="w-full h-fit"
-                  src={image?.url}
+                  src={image?.previewImage}
                   draggable={false}
                   alt="img"
                   loading="lazy"
@@ -559,7 +566,7 @@ export default function Chat() {
                   onChange={(e) => {
                     if (voiceNote) setVoiceNote(undefined);
                     if (audioUrl) setAudioUrl(null);
-                    if (changeAudio) setChangeAudio(false);
+                    if (switchMediaUrl) setSwitchMediaUrl(false);
                     if (newMediaUrl) setNewMediaUrl(undefined);
                     handleImageChange(e);
                   }}
@@ -578,7 +585,7 @@ export default function Chat() {
                   onChange={(e) => {
                     if (voiceNote) setVoiceNote(undefined);
                     if (audioUrl) setAudioUrl(null);
-                    if (changeAudio) setChangeAudio(false);
+                    if (switchMediaUrl) setSwitchMediaUrl(false);
                     if (newMediaUrl) setNewMediaUrl(undefined);
                     setUserMsg(e.target.value);
                   }}

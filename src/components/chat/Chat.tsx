@@ -74,27 +74,20 @@ export default function ChatBox({
             )}
             {/* client image handling */}
             {msg.media_url &&
-              msg.media_url?.includes("localhost") &&
+              msg.media_url?.includes("Processing") &&
               msg.media_type === "image" && (
-                <img
-                  src={msg.media_url}
-                  alt="img"
-                  draggable={false}
-                  className="w-[300px] mb-2 rounded-lg md:w-[250px] lg:w-[300px]"
-                  loading="lazy"
-                  decoding="async"
-                />
+                <div className="italic">
+                  <MarkdownPreview
+                    style={{ backgroundColor: "transparent", color: "inherit" }}
+                    source={msg.media_url}
+                  />
+                </div>
               )}
             {/* client audio handling */}
             {msg.media_url &&
               msg.media_url?.includes("Processing") &&
               msg.media_type === "audio" && (
-                // <audio
-                //   onContextMenu={(e) => e.preventDefault()}
-                //   controls
-                //   src={msg.media_url}
-                // />
-                <div>
+                <div className="italic">
                   <MarkdownPreview
                     style={{ backgroundColor: "transparent", color: "inherit" }}
                     source={msg.media_url}
@@ -110,6 +103,13 @@ export default function ChatBox({
             <MarkdownPreview
               style={{ backgroundColor: "transparent", color: "inherit" }}
               source={msg.media_url?.includes(".webm") ? "" : msg.content}
+              // source={
+              //   msg.media_url?.includes(".webm")
+              //     ? ""
+              //     : msg.media_url?.includes("image")
+              //     ? ""
+              //     : msg.content
+              // }
               // source={msg.content}
             />
           </div>
